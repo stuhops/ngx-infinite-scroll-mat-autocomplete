@@ -19,6 +19,10 @@ export class InfiniteScrollMatAutocompleteDirective implements AfterViewInit {
    */
   @Input() infiniteScrollDistance: number = 2;
   /**
+   * Should get a number of milliseconds for throttle. The event will be triggered this many milliseconds after the user stops scrolling.
+   */
+  @Input() infiniteScrollThrottle: number = 150;
+  /**
    * this will callback if the distance threshold has been reached on a scroll down.
    */
   @Output() scrolled = new EventEmitter<void>();
@@ -29,11 +33,13 @@ export class InfiniteScrollMatAutocompleteDirective implements AfterViewInit {
 
   private _panelOpenTimeout: NodeJS.Timeout | null = null;
   private _scrollDebounce: NodeJS.Timeout | null = null;
+  private _scrollListener?: () => void;
 
   constructor(
-    @Host() @Optional() private _autocomplete: MatAutocomplete, // Inject MatAutocomplete
+    @Host() private _autocomplete: MatAutocomplete, // Inject MatAutocomplete
   ) {
-    console.warn('Here is the injected autocomplete', this._autocomplete);
+    if (!this._autocomplete)
+      throw Error('InfiniteScrollMatAutocompleteDirective requires a MatAutocomplete instance.');
   }
 
   async ngAfterViewInit(): Promise<void> {
@@ -55,21 +61,30 @@ export class InfiniteScrollMatAutocompleteDirective implements AfterViewInit {
 
   ngOnDestroy(): void {
     if (this._panelOpenTimeout) window.clearTimeout(this._panelOpenTimeout);
+    if (this._scrollDebounce) window.clearTimeout(this._scrollDebounce);
+
+    const panel = this._autocomplete?.panel?.nativeElement;
+    if (panel && this._scrollListener) {
+      panel.removeEventListener('scroll', this._scrollListener);
+    }
   }
 
   private _addScrollEventListener(): void {
     const panel = this._autocomplete?.panel?.nativeElement;
     if (!panel) throw Error('Panel must exist here');
 
-    panel.addEventListener('scroll', () => {
+    // To remove memory leaks
+    this._scrollListener = () => {
       if (this._scrollDebounce) window.clearTimeout(this._scrollDebounce);
       this._scrollDebounce = setTimeout(() => {
         const { scrollTop, scrollHeight, clientHeight } = panel;
         const percentageScrolled = (scrollTop / (scrollHeight - clientHeight)) * 100;
         this.scrollPerc.emit(Math.min(percentageScrolled, 100)); // Cap at 100%
-        this._scrolledHandler({scrollHeight, scrollTop, clientHeight});
-      });
-    });
+        this._scrolledHandler({ scrollHeight, scrollTop, clientHeight });
+      }, this.infiniteScrollThrottle);
+    };
+
+    panel.addEventListener('scroll', this._scrollListener);
   }
 
   private async _panelOpened(): Promise<void> {
