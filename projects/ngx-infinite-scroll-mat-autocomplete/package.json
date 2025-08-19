@@ -8,7 +8,7 @@
   },
   "homepage": "https://github.com/stuhops/ngx-infinite-scroll-mat-autocomplete",
   "license": "MIT",
-  "version": "20.0.0",
+  "version": "20.0.1",
   "peerDependencies": {
     "@angular/animations": "^20.0.0",
     "@angular/cdk": "^20.0.0",
