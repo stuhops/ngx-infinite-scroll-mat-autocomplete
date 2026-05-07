@@ -8,14 +8,14 @@
   },
   "homepage": "https://github.com/stuhops/ngx-infinite-scroll-mat-autocomplete",
   "license": "MIT",
-  "version": "20.0.1",
+  "version": "21.0.0",
   "peerDependencies": {
-    "@angular/animations": "^20.0.0",
-    "@angular/cdk": "^20.0.0",
-    "@angular/common": "^20.0.0",
-    "@angular/core": "^20.0.0",
-    "@angular/material": "^20.0.0",
-    "@angular/forms": "^20.0.0"
+    "@angular/animations": ">=15.0.0",
+    "@angular/cdk": ">=15.0.0",
+    "@angular/common": ">=15.0.0",
+    "@angular/core": ">=15.0.0",
+    "@angular/material": ">=15.0.0",
+    "@angular/forms": ">=15.0.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"
